@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vega Portal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mali:wght@600&display=swap" rel="stylesheet">
+  <style>
+    /*******************************************************
+     1) RESET & BASIC GLOBAL STYLES
+    *******************************************************/
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    html, body {
+      width: 100%;
+      min-height: 100vh;
+      font-family: 'Mali', sans-serif;
+      color: #333;
+      overflow-x: hidden;
+      display: flex;
+      flex-direction: column;
+      background: url("images/egghead.jpg") center center / cover no-repeat;
+      background-attachment: fixed; /* optional parallax-like effect */
+      background-size: 88%;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+    ul { list-style: none; }
+
+    /*******************************************************
+     2) PARTICLE BACKGROUND
+    *******************************************************/
+    .particle-background {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .particle {
+      position: absolute;
+      background: rgba(255, 255, 255, 0.4);
+      box-shadow: 0 0 6px #fff, 0 0 12px #ff89c0; /* slight pinkish glow */
+      border-radius: 50%;
+      opacity: 0;
+      animation: floatParticle linear infinite;
+    }
+    @keyframes floatParticle {
+      0% {
+        transform: translateY(0) scale(1);
+        opacity: 0;
+      }
+      10% { opacity: 1; }
+      50% { opacity: 1; }
+      90% { opacity: 1; }
+      100% {
+        transform: translateY(-100vh) scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    /*******************************************************
+     3) STICKY HEADER / NAVIGATION
+    *******************************************************/
+    header.main-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 26px;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(13px);
+      box-shadow: 0 3px 11px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+    .logo img {
+      height: 46px;
+      width: auto;
+    }
+    nav ul {
+      display: flex;
+      gap: 32px;
+    }
+    nav a {
+      color: #555; /* darker text for contrast */
+      font-weight: 500;
+      transition: color 0.3s ease;
+      padding: 9px 13px;
+      border-radius: 9px;
+    }
+    nav a:hover {
+      color: #ff1493; /* bright pink hover */
+      background: rgba(255, 255, 255, 0.2);
+    }
+
+    .buy-btn {
+      background: #ff1493; 
+      color: #fff;
+      padding: 11px 22px;
+      border-radius: 9px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 8px rgba(255, 20, 147, 0.4), 0 0 15px rgba(255, 20, 147, 0.3);
+    }
+    .buy-btn:hover {
+      background: #ff7cc5; 
+      transform: translateY(-3px);
+      box-shadow: 0 0 15px rgba(255, 20, 147, 0.4), 0 0 25px rgba(255, 20, 147, 0.3);
+    }
+
+    /*******************************************************
+     4) MAIN WRAPPER / SECTIONS
+    *******************************************************/
+    section {
+      padding: 65px 26px;
+      max-width: 1400px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 2;
+      /* Extra top margin for the fixed header space */
+      margin-top: 90px;
+    }
+    .section-title {
+      text-align: center;
+      font-size: 2.6rem;
+      margin-bottom: 26px;
+      color: #ff1493;
+      text-shadow: 0 0 5px rgba(255, 20, 147, 0.4);
+    }
+    .content-card {
+      /* White panel with slight opacity so background image is visible behind it */
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(11px);
+      border-radius: 16px;
+      box-shadow: 0 5px 13px rgba(0, 0, 0, 0.1);
+      padding: 26px;
+      max-width: 950px;
+      margin: 0 auto 41px;
+      border: 1px solid rgba(148, 163, 184, 0.05);
+      color: #333;
+    }
+    .content-card h3 {
+      margin-bottom: 13px;
+      font-size: 1.7rem;
+      color: #ff1493;
+      text-shadow: 0 0 5px rgba(255, 20, 147, 0.4);
+    }
+    .content-card p {
+      line-height: 1.7;
+      margin-bottom: 16px;
+      color: #333;
+      font-weight: 400;
+    }
+
+    /*******************************************************
+     5) FOOTER 
+    *******************************************************/
+    footer.main-footer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(11px);
+      padding: 18px;
+      text-align: center;
+      z-index: 100;
+    }
+    footer p {
+      font-size: 1.0rem;
+      opacity: 0.9;
+      color: #555;
+      margin: 0;
+    }
+
+    /*******************************************************
+     6) RADIO / BOOMBOX SECTION
+    *******************************************************/
+    .radio-section {
+      text-align: center;
+      margin: 0 auto;
+    }
+    .boombox-container {
+      /* Slightly translucent so background image peeks through */
+      background: rgba(255, 255, 255, 0.6);
+      backdrop-filter: blur(12px);
+      margin: 30px auto;
+      padding: 25px;
+      border-radius: 20px;
+      max-width: 1100px;
+      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      transition: box-shadow 0.3s ease-in-out;
+      padding-top: 40px;
+    }
+    .boombox-container:hover {
+      box-shadow: 0 0 15px rgba(255, 20, 147, 0.3);
+    }
+    .boombox-container h3 {
+      margin-bottom: 22px;
+      font-size: 2.0rem;
+      color: #ff1493;
+      text-shadow: 0 0 5px rgba(255, 20, 147, 0.4);
+    }
+    .playing {
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.02); }
+      100% { transform: scale(1); }
+    }
+    .box {
+      position: relative;
+      height: 250px;
+      width: 500px;
+      margin: 25px auto 35px;
+      border-radius: 15px;
+      background: rgba(255, 255, 255, 0.7);
+      box-shadow: inset 0 0 6px rgba(255, 20, 147, 0.3), 0 0 10px rgba(255, 20, 147, 0.2);
+      overflow: hidden;
+      border: 1px solid rgba(255, 20, 147, 0.2);
+    }
+    .speaker-bars {
+      position: absolute;
+      bottom: 5px;
+      left: 5px;
+      width: 90%;
+      height: 20px;
+      display: flex;
+      justify-content: space-around;
+      align-items: flex-end;
+      overflow: hidden;
+    }
+    .bar {
+      width: 5px;
+      background-color: #6a67f8;
+      height: 2px;
+      animation: vu-meter 0.7s ease-in-out infinite alternate;
+      transform-origin: bottom;
+    }
+    .bar:nth-child(2) { animation-delay: 0.2s; }
+    .bar:nth-child(3) { animation-delay: 0.4s; }
+    .bar:nth-child(4) { animation-delay: 0.1s; }
+    .bar:nth-child(5) { animation-delay: 0.3s; }
+    @keyframes vu-meter {
+      from { transform: scaleY(0.1); opacity: 0.7; }
+      to { transform: scaleY(1); opacity: 1; }
+    }
+    .left-speaker,
+    .right-speaker {
+      position: absolute;
+      height: 40%;
+      width: 18%;
+      top: 30%;
+      background: #d1d1d6; /* lighter pink to match new theme */
+      border-radius: 50%;
+      box-shadow: 0 3px 8px rgba(20, 55, 255, 0.3);
+    }
+    .left-speaker { left: 5%; }
+    .right-speaker { right: 5%; }
+
+    /* Cassette & detail areas */
+    .tape-player {
+      position: absolute;
+      height: 18%;
+      width: 22%;
+      top: 12%;
+      left: 39%;
+      background: #ccc;
+      border-radius: 10px;
+      box-shadow: 0 3px 7px rgba(0, 0, 0, 0.2);
+      animation: tape-pulse 2s linear infinite alternate, spinTape 3s linear infinite;
+    }
+    @keyframes tape-pulse {
+      from { opacity: 0.8; }
+      to { opacity: 1; }
+    }
+    @keyframes spinTape {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .middle-top,
+    .middle-bottom {
+      position: absolute;
+      background: #ddd;
+      border-radius: 8px;
+      width: 20%;
+      left: 40%;
+      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .middle-top {
+      height: 20%;
+      top: 35%;
+    }
+    .middle-bottom {
+      height: 22%;
+      top: 60%;
+    }
+    .handle {
+      position: absolute;
+      height: 5%;
+      width: 30%;
+      background: #ff99c9; /* pinkish bar */
+      border-radius: 5px;
+      top: 80%;
+      left: 35%;
+      box-shadow: 0 3px 7px rgba(255, 20, 147, 0.3);
+    }
+
+    /* Radio Controls */
+    .radio-controls {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      align-items: center;
+      margin: -15px auto 15px;
+    }
+    .radio-controls button,
+    .radio-controls input[type="range"] {
+      padding: 11px 17px;
+      font-size: 1.02em;
+      border: none;
+      border-radius: 10px;
+      outline: none;
+      background: rgba(255,255,255,0.8);
+      color: #333;
+      transition: all 0.3s ease;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+    }
+    .radio-controls button:hover,
+    .radio-controls input[type="range"]:hover {
+      background: #ffbee2;
+      transform: scale(1.05);
+      color: #fff;
+    }
+    .radio-controls button {
+      background: #bbb;
+      color: #333;
+      font-weight: 600;
+    }
+    .radio-controls button:hover {
+      background: #ff1493; 
+      color: #fff;
+    }
+    .radio-controls input[type="range"] {
+      width: 160px;
+    }
+    .now-playing {
+      margin: 16px 0;
+      font-size: 1.25em;
+      color: #555;
+      text-shadow: 0 0 4px rgba(255, 255, 255, 0.6);
+    }
+    .station-group {
+      margin: 25px 0;
+    }
+    .stations {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      justify-content: center;
+      margin-top: 15px;
+    }
+    .station-box {
+      background: rgba(255,255,255,0.7);
+      padding: 12px 20px;
+      border-radius: 10px;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: #333;
+      font-size: 1em;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      position: relative;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .station-box:hover {
+      background: #ffbee2;
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 20, 147, 0.3), 0 0 25px rgba(255, 20, 147, 0.2);
+      transform: scale(1.05);
+    }
+    .station-box.active {
+      background: #ff1493;
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 20, 147, 0.5), 0 0 25px rgba(255, 20, 147, 0.4);
+    }
+
+    /*******************************************************
+     7) RESPONSIVE TWEAKS
+    *******************************************************/
+    @media (max-width: 768px) {
+      header.main-header {
+        padding: 10px 15px;
+      }
+      nav ul {
+        gap: 15px;
+      }
+      nav a {
+        padding: 6px 10px;
+      }
+      .buy-btn {
+        padding: 8px 16px;
+      }
+      section {
+        padding: 45px 20px;
+        margin-top: 80px;
+      }
+      .boombox-container {
+        padding: 15px;
+      }
+      .box {
+        width: 280px;
+        height: 150px;
+        transform: scale(0.8);
+      }
+      .left-speaker, .right-speaker, 
+      .tape-player, .middle-top, .middle-bottom, .handle {
+        display: none;
+      }
+      .radio-controls {
+        margin: 0;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .radio-controls button,
+      .radio-controls input[type="range"] {
+        padding: 9px;
+        font-size: 0.9em;
+      }
+      .radio-controls input[type="range"] {
+        width: 100%;
+      }
+      .section-title {
+        font-size: 2.0rem;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <!-- PARTICLE BACKGROUND -->
+  <div class="particle-background"></div>
+
+  <!-- HEADER / NAV -->
+  <header class="main-header">
+    <a href="#buy" class="buy-btn">Buy Now</a>
+    <nav>
+      <ul>
+        <a href="https://twitter.com/punklaboratory" target="_blank" class="icon x">X</a>
+        <a href="https://PUMPFUN" target="_blank" class="icon domain-link">6SuVV1nMsFALPxH9UdeLK95f3pump</a>
+        <a href="https://punklaboratory.com" target="_blank" class="icon domain-link">punklaboratory.com</a>
+      </ul>
+    </nav>
+    <a href="#buy" class="buy-btn">Buy Now</a>
+  </header>
+
+  <!-- RADIO SECTION -->
+  <section class="radio-section">
+    <div class="boombox-container">
+      <h3>VEGAVEGA</h3>
+      <div class="box" id="boombox">
+        <div class="tape-player"></div>
+        <div class="left-speaker">
+          <div class="speaker-bars">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div class="right-speaker">
+          <div class="speaker-bars">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+          </div>
+        </div>
+        <div class="middle-top"></div>
+        <div class="middle-bottom"></div>
+        <div class="handle"></div>
+      </div>
+
+      <!-- Radio Controls -->
+      <div class="radio-controls">
+        <button id="playPause">Play</button>
+        <input type="range" id="volume" min="0" max="1" step="0.05" value="0.5">
+      </div>
+
+      <div class="now-playing" id="nowPlaying">Now Playing: None</div>
+
+      <!-- Station Groups -->
+      <div class="station-group" id="vegaportal">
+        <h4>Vega Portal</h4>
+        <div class="stations">
+          <div class="station-box" data-url="audio/belly.mp3">
+            Bell
+          </div>
+          <div class="station-box" data-url="https://dcs-spotify.megaphone.fm/GLT5288851404.mp3?key=b1cdfe55aca81d746c3974cab3073d33">
+            Joe Rogan
+          </div>
+          <div class="station-box" data-url="audio/hello.mp3">
+            Hello
+          </div>
+          <div class="station-box" data-url="audio/reject.mp3">
+            Reject
+          </div>
+          <div class="station-box" data-url="audio/revolution.mp3">
+            Revolution
+          </div>
+          <div class="station-box" data-url="audio/session.mp3">
+            Session
+          </div>
+          <div class="station-box" data-url="https://ibizasonica.streaming-pro.com:8000/ibizasonica">
+            Dance
+          </div>
+        </div>
+      </div>
+
+      <div class="station-group" id="worldStationsGroup">
+        <h4>World Stations</h4>
+        <div class="stations">
+          <div class="station-box" data-url="https://stream.radio.co/sd60e90ab1/listen">
+            VintageFM
+          </div>
+          <div class="station-box" data-url="https://das-edge11-live365-dal03.cdnstream.com/a91285">
+            D100
+          </div>
+          <div class="station-box" data-url="https://sohoradiomusic.doughunt.co.uk:8010/320mp3">
+            Soho Radio
+          </div>
+          <div class="station-box" data-url="https://kexp-mp3-128.streamguys1.com/kexp128.mp3">
+            KEXP
+          </div>
+          <div class="station-box" data-url="https://stream.techno.fm/radio1.mp3">
+            TechnoFM
+          </div>
+          <div class="station-box" data-url="https://26343.live.streamtheworld.com/977_JAMZ.mp3">
+            97.7 JAMZ
+          </div>
+          <div class="station-box" data-url="https://gemradionw.radioca.st/stream/1/">
+            80s Hits
+          </div>
+        </div>
+      </div>
+
+      <div class="station-group" id="sanAndreasGroup">
+        <h4>GTA Radio Stations</h4>
+        <div class="stations">
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/bounce-fm">
+            Bounce FM
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/csr">
+            CSR
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/k-dst">
+            K-DST
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/k-jah">
+            K-Jah
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/k-rose">
+            K-Rose
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/master-sounds">
+            Master Sounds
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/playback-fm">
+            Playback FM
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/radio-los-santos">
+            Radio Los Santos
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/radio-x">
+            Radio X
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/sfur">
+            SFUR
+          </div>
+          <div class="station-box" data-url="https://play.smolyakov.dev/stream/sa/wctr">
+            WCTR
+          </div>
+          <div class="station-box" data-url="audio/FlashFM.mp3">
+            FlashFM
+          </div>
+          <div class="station-box" data-url="audio/fever105.mp3">
+            Fever 105
+          </div>
+        </div>
+      </div>
+    </div>    
+  </section>
+
+  <!-- ABOUT SECTION -->
+  <section id="about">
+    <h2 class="section-title">About</h2>
+    <div class="content-card">
+      <h3>Plug in. Tune out. Think deeper</h3>
+      <p>
+        Welcome to the Vega Portal, where frequencies meet philosophy.
+        This isn’t just a radio.
+      </p>
+      <p>
+        We’ve cracked the code to stream sounds from every corner of the globe, real stations, real-time.
+        From underground beats in Tokyo to classic rock waves in New York, it’s all here. Oh, and for the culture? We’ve got GTA radios blasting too, because why not?
+        No ads. No noise. Just pure, unfiltered audio chaos.
+        Built in the Vegapunk Laboratory, powered by curiosity, and designed for those who vibe differently.
+      </p>
+    </div>
+  </section>
+
+  <!-- Donate -->
+  <section id="charity">
+    <h2 class="section-title">Support</h2>
+    <div class="content-card">
+      <p>
+        CA: DN8Epi85aLSSso1KyiQDUdfJ93ZrN4Wj6DaG9MZb8d3u
+      </p>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="main-footer">
+    <p>© Vegapunk Labs</p>
+    <!-- Hidden audio element for streaming -->
+    <audio id="audio" crossorigin="anonymous" style="display:none;"></audio>
+  </footer>
+
+  <!-- JAVASCRIPT for the RADIO BOOMBOX & PARTICLE GENERATION -->
+  <script>
+    // Particle background generation
+    document.addEventListener('DOMContentLoaded', function () {
+      const particleContainer = document.querySelector('.particle-background');
+      const numParticles = 50; // Adjust as desired
+      for (let i = 0; i < numParticles; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+        // Random size between 2px and 6px
+        const size = Math.random() * 4 + 2;
+        particle.style.width = size + 'px';
+        particle.style.height = size + 'px';
+        // Random starting position
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = Math.random() * 100 + '%';
+        // Random animation duration
+        const duration = Math.random() * 10 + 10;
+        particle.style.animationDuration = duration + 's';
+        // Negative delay so they start at different points
+        particle.style.animationDelay = -Math.random() * duration + 's';
+        particleContainer.appendChild(particle);
+      }
+    });
+
+    // Radio boombox controls
+    document.addEventListener('DOMContentLoaded', function () {
+      const audio = document.getElementById('audio');
+      const playPauseButton = document.getElementById('playPause');
+      const volumeSlider = document.getElementById('volume');
+      const nowPlayingDisplay = document.getElementById('nowPlaying');
+      const stationBoxes = document.querySelectorAll('.station-box');
+      const boomboxContainer = document.querySelector('.boombox-container');
+
+      // Initial volume
+      audio.volume = volumeSlider.value;
+
+      // Clear active states
+      function clearActiveStates() {
+        stationBoxes.forEach(box => box.classList.remove('active'));
+      }
+
+      // Update station
+      function updateStation(box) {
+        const stationName = box.textContent.trim();
+        const stationUrl = box.getAttribute('data-url');
+        nowPlayingDisplay.textContent = 'Now Playing: ' + stationName;
+        clearActiveStates();
+        box.classList.add('active');
+        audio.src = stationUrl;
+        audio.play().then(() => {
+          playPauseButton.textContent = 'Pause';
+          boomboxContainer.classList.add('playing');
+        }).catch(error => console.error('Error playing audio:', error));
+      }
+
+      // Station selection
+      stationBoxes.forEach(box => {
+        box.addEventListener('click', function () {
+          updateStation(box);
+        });
+      });
+
+      // Play/Pause
+      playPauseButton.addEventListener('click', function () {
+        if (audio.paused) {
+          audio.play().then(() => {
+            playPauseButton.textContent = 'Pause';
+            boomboxContainer.classList.add('playing');
+          }).catch(error => console.error('Error playing audio:', error));
+        } else {
+          audio.pause();
+          playPauseButton.textContent = 'Play';
+          boomboxContainer.classList.remove('playing');
+        }
+      });
+
+      // Volume control
+      volumeSlider.addEventListener('input', function () {
+        audio.volume = this.value;
+      });
+    });
+  </script>
+
+</body>
+</html>
